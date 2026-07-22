@@ -1,0 +1,9 @@
+target
+results/**/*.json
+resilience/responses/
+analysis/figures/
+*.log
+!allatori/*.xml
+dependency-reduced-pom.xml
+.vscode
+allatori/*.jar

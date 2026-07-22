@@ -1,0 +1,25 @@
+<config>
+    <input>
+        <jar in="target/app-original.jar" out="target/app-string.jar"/>
+    </input>
+
+    <property name="random-seed" value="finance-perf-2026"/>
+
+    <property name="control-flow-obfuscation" value="none"/>
+    <property name="string-encryption" value="maximum"/>
+    <property name="renaming" value="normal"/>
+
+    <keep-names>
+        <class template="class com.finance.perf.*"/>
+        <class template="class com.finance.engine.CorrectnessRunner">
+            <method template="* main(**)"/>
+        </class>
+        <class template="class com.finance.engine.TransactionEngine$Order">
+            <field template="* *"/>
+        </class>
+    </keep-names>
+
+    <ignore-classes>
+        <class template="class org.openjdk.jmh.**"/>
+    </ignore-classes>
+</config>

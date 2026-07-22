@@ -1,0 +1,31 @@
+<config>
+    <input>
+        <jar in="target/app-original.jar" out="target/app-baseline.jar"/>
+    </input>
+
+    <property name="random-seed" value="finance-perf-2026"/>
+
+    <!-- Fatores caros DESLIGADOS -->
+    <property name="control-flow-obfuscation" value="none"/>
+    <property name="string-encryption" value="none"/>
+
+    <!-- Renaming SEMPRE ligado (pano de fundo, custo ~0 em runtime) -->
+    <property name="renaming" value="normal"/>
+
+    <keep-names>
+        <!-- Harness JMH e fabrica de ordens: NAO ofuscar -->
+        <class template="class com.finance.perf.*"/>
+        <!-- Entry point de correcao preservado -->
+        <class template="class com.finance.engine.CorrectnessRunner">
+            <method template="* main(**)"/>
+        </class>
+        <!-- Campos publicos de Order acessados pela OrderFactory -->
+        <class template="class com.finance.engine.TransactionEngine$Order">
+            <field template="* *"/>
+        </class>
+    </keep-names>
+
+    <ignore-classes>
+        <class template="class org.openjdk.jmh.**"/>
+    </ignore-classes>
+</config>

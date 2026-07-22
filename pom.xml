@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ==== Coordenadas do projeto ==== -->
+    <groupId>com.finance</groupId>
+    <artifactId>transacao-perf</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Transacao Performance Benchmark (JMH)</name>
+    <description>
+        Microbenchmark JMH para medir o overhead de ofuscacao (Allatori)
+        em codigo de processamento de transacoes financeiras.
+    </description>
+
+    <properties>
+        <!-- Encoding UTF-8 para os fontes -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Java 17 -->
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Versao do JMH -->
+        <jmh.version>1.37</jmh.version>
+    </properties>
+
+    <dependencies>
+        <!-- Nucleo do JMH: API de benchmarking (@Benchmark, runner, etc.) -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--
+          Annotation processor do JMH.
+          ESSENCIAL: em tempo de compilacao ele varre as anotacoes @Benchmark
+          e gera as classes de suporte que registram cada benchmark.
+          Sem esta dependencia o JMH nao encontra nenhum @Benchmark em runtime
+          (o comando "-l" retorna lista vazia). Escopo "provided" porque so
+          e necessario durante a compilacao, nao em runtime.
+        -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                Compilador: compila para Java 17 e executa o annotation
+                processor do JMH declarado acima para gerar os metadados
+                dos benchmarks.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <!--
+                        Processa as anotacoes do JMH via seu annotation processor.
+                        O processor vem da dependencia jmh-generator-annprocess.
+                    -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.openjdk.jmh</groupId>
+                            <artifactId>jmh-generator-annprocess</artifactId>
+                            <version>${jmh.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!--
+                maven-shade-plugin: gera o uber-jar (fat jar) autocontido e
+                executavel que sera posteriormente ofuscado pela Allatori.
+                - finalName "app-original" => produz target/app-original.jar
+                - Main-Class = org.openjdk.jmh.Main (permite "java -jar ... -l")
+                - Remove as assinaturas (*.SF/*.DSA/*.RSA) para evitar
+                  "Invalid signature file" ao juntar varios jars num so.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Nome final do artefato: target/app-original.jar -->
+                            <finalName>app-original</finalName>
+                            <transformers>
+                                <!--
+                                    Define a Main-Class do manifest como o runner
+                                    do JMH, permitindo executar os benchmarks via
+                                    "java -jar target/app-original.jar".
+                                -->
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.openjdk.jmh.Main</mainClass>
+                                    <manifestEntries>
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+                                <!--
+                                    Concatena os arquivos de servico (META-INF/services)
+                                    de todos os jars, preservando o registro do
+                                    annotation processor e demais provedores.
+                                -->
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <!--
+                                        Exclui arquivos de assinatura para evitar
+                                        SecurityException ao criar o uber-jar.
+                                    -->
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+<!--
+=============================================================================
+VALIDACAO ESPERADA
+=============================================================================
+1) mvn clean package
+   => gera target/app-original.jar (uber-jar executavel)
+
+2) java -jar target/app-original.jar -l
+   => lista com.finance.perf.TransactionProcessingBenchmark.processOrders
+
+3) java -cp target/app-original.jar com.finance.engine.CorrectnessRunner
+-->
