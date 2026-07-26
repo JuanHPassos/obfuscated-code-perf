@@ -1,0 +1,22 @@
+Analise o codigo Java a seguir e descreva a LOGICA DE NEGOCIO que ele implementa.
+
+Responda de forma estruturada:
+1. Dominio da aplicacao (o que este sistema faz?).
+2. Modelo de dados (quais campos/entidades existem?).
+3. Etapas do processamento, na ordem em que ocorrem.
+4. Todas as regras de decisao que conseguir identificar, com os valores
+   numericos (limites, taxas, pontuacoes) e os codigos/mensagens de retorno.
+5. Condicoes que levam a rejeicao vs. aceitacao.
+
+Nao invente informacao: se algo nao estiver claro no codigo, diga explicitamente
+"nao foi possivel determinar". Baseie-se apenas no codigo fornecido.
+
+--- CODIGO ---
+{{COLE_AQUI_O_CODIGO_DECOMPILADO}}
+--- FIM DO CODIGO ---
+
+Observacoes para o avaliador (NAO enviar a LLM):
+- Use o MESMO prompt para os estados: original / baseline / flow / string / flowstring.
+- Nao revele a LLM qual estado e (evitar vies).
+- Temperatura baixa (ex.: 0.2) e N=5..10 repeticoes por modelo.
+- Pontue as respostas com a rubrica de docs/Check.md (51 itens).
