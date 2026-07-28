@@ -24,6 +24,24 @@ mkdir -p "$RESULTS"
 # Parametros JMH (batem com as anotacoes do benchmark; explicitos p/ reprodutibilidade)
 JMH_ARGS=(-f 10 -wi 10 -i 20 -foe true)
 
+# Trava o governor de CPU em "performance" (evita ruido de DVFS durante a
+# medicao) e restaura o valor original ao sair. Nao falha o script se
+# cpupower/sysfs nao estiverem disponiveis, so avisa.
+GOV_FILE="/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+ORIG_GOVERNOR=""
+if command -v cpupower >/dev/null 2>&1 && [[ -r "$GOV_FILE" ]]; then
+  ORIG_GOVERNOR="$(cat "$GOV_FILE")"
+  if sudo cpupower frequency-set -g performance >/dev/null 2>&1; then
+    echo ">>> Governor de CPU travado em 'performance' (era '$ORIG_GOVERNOR')"
+    trap '[[ -n "$ORIG_GOVERNOR" ]] && sudo cpupower frequency-set -g "$ORIG_GOVERNOR" >/dev/null 2>&1' EXIT
+  else
+    echo "!! Falha ao travar governor em 'performance' (sem sudo?) - resultados podem ter mais ruido de DVFS."
+    ORIG_GOVERNOR=""
+  fi
+else
+  echo "!! cpupower/scaling_governor indisponivel - governor de CPU nao foi travado."
+fi
+
 is_arm=0
 case "$HOST_ARCH" in aarch64|arm*) is_arm=1 ;; esac
 

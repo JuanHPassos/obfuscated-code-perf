@@ -113,20 +113,16 @@ bash scripts/03_verify_correctness.sh
 
 ### T6 - Coleta de desempenho
 
-**Antes de medir (obrigatório, nas duas arquiteturas - x86 e ARM):** fixe o clock da CPU no modo `performance` para reduzir variância:
-```bash
-sudo cpupower frequency-set -g performance
-
-```
-> Se o `cpupower` não estiver instalado: `sudo apt-get install -y linux-cpupower`.
-
-
-Depois, colete:
 ```bash
 bash scripts/04_bench.sh              # detecta a arquitetura via uname -m
 # gera results/jmh-<arch>-<perfil>.json (+ time-*.txt; thermal-*.log no ARM)
 
 ```
+
+O script já fixa o clock da CPU no modo `performance` (via `sudo cpupower frequency-set -g performance`) antes de medir, nas duas arquiteturas, e restaura o governor original ao final — não é mais um passo manual. Se `cpupower` não estiver instalado ou o `sudo` falhar (ex.: sem senha configurada em modo não-interativo), o script avisa e segue sem travar o clock — resultados coletados assim tendem a ter mais ruído por variação de frequência (DVFS).
+> Se o `cpupower` não estiver instalado: `sudo apt-get install -y linux-cpupower`.
+
+Cada perfil roda com `-f 10 -wi 10 -i 20` (10 forks, 10 iterações de warmup, 20 de medição, 1s cada) — o fork é a unidade de réplica independente usada depois no T8.
 
 
 ### T7 - Resiliência (decompilação + LLM)
@@ -145,11 +141,14 @@ Depois, para cada estado, envie o código decompilado à LLM usando `scripts/pro
 ```bash
 pip install numpy scipy pandas matplotlib
 python3 scripts/07_analyze.py
-# gera analysis/summary.csv e analysis/overhead-<arch>-size<N>.png
+# gera analysis/summary.csv, analysis/arch_interaction.csv
+# e analysis/overhead-<arch>-size<N>.png
 
 ```
 
-Para cada perfil calcula média, IC 95%, overhead % vs. `original`, teste de significância (Welch-t ou Mann-Whitney, escolhido por Shapiro-Wilk) e tamanho de efeito (Cliff's delta).
+Para cada perfil calcula média, IC 95%, overhead % vs. `original`, teste de significância (Welch-t ou Mann-Whitney, escolhido por Shapiro-Wilk) e tamanho de efeito (Cliff's delta), com correção Holm-Bonferroni por família (arch, size).
+
+Além disso, `arch_interaction.csv` testa se o overhead de cada perfil **difere entre ARM e x86_64** (bootstrap da diferença de overheads, com correção Holm-Bonferroni por (size, par de arquiteturas)). Isso é necessário porque "significativo em x86, não-significativo em ARM" na tabela `summary.csv` não implica, por si só, que a diferença entre as arquiteturas seja estatisticamente significativa.
 
 ---
 
@@ -166,7 +165,7 @@ scp scripts/04_bench.sh   pi@<IP_DO_PI>:~/ideia/scripts/
 ```
 
 
-2. No Pi (garanta cooling ativo e o mesmo JDK):
+2. No Pi (garanta cooling ativo, o mesmo JDK e acesso a `sudo` para o `cpupower`):
 ```bash
 cd ~/ideia
 sed -i 's/\r$//' scripts/04_bench.sh  # normaliza terminacoes de linha se necessario
