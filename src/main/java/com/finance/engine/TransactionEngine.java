@@ -23,6 +23,7 @@ public final class TransactionEngine {
 
     // ---- Modelo de dados ------------------------------------------------------------
 
+    // Processa uma ordem de compra/venda
     public static final class Order {
         public String txnId;
         public String accountKey;   
@@ -43,22 +44,42 @@ public final class TransactionEngine {
     }
 
     /**
-     * Resumo DETERMINISTICO de uma execucao completa.
-     * Usado como oraculo de correcao: original e ofuscado devem
-     * produzir exatamente o mesmo Summary para o mesmo input.
+     * Resultado agregado de rodar um lote inteiro de ordens (o "placar final").
+     *
+     * Comparamos o texto gerado por toString() do jar original com o do jar ofuscado.
+     * Se a ofuscacao mudou o comportamento do motor por engano -- por exemplo
+     * uma ordem que era aceita passou a ser rejeitada -- os numeros abaixo vao
+     * ser diferentes entre as duas execucoes, e a diferenca aparece no diff.
+     * Por isso os campos precisam ser 100% deterministicos: mesma entrada
+     * sempre gera exatamente os mesmos valores.
      */
     public static final class Summary {
         public long acceptedCount;
         public long rejectedCount;
         public long totalFeeCents;
         public long totalNetSettledCents;
+
+        // Cada mapa conta quantas vezes cada "motivo" apareceu: motivo de
+        // rejeicao, venue para onde a ordem foi roteada, e tier de risco.
+        // Usamos TreeMap (em vez de HashMap) porque ele mantem as chaves
+        // sempre ordenadas alfabeticamente. Isso importa porque um HashMap
+        // comum pode imprimir os itens em ordens diferentes em execucoes
+        // diferentes, o que faria o toString() variar mesmo sem nada ter
+        // mudado de verdade -- e quebraria a comparacao do golden file.
         public final Map<String, Long> rejectHistogram = new TreeMap<>();
         public final Map<String, Long> venueHistogram = new TreeMap<>();
         public final Map<String, Long> riskHistogram  = new TreeMap<>();
 
-        /** Hash estavel das decisoes (independe de ordem de iteracao de mapa). */
+        /**
+         * Resume todo o Summary em um unico numero (um hash, como o hashCode()
+         * do Java, so que calculado a mao aqui para garantir que o calculo seja
+         * sempre o mesmo, independente da versao do Java usada).
+         * Ideia: em vez de comparar visualmente cada campo, basta comparar esse
+         * numero entre a execucao original e a ofuscada. Se forem iguais, e um
+         * forte indicio de que tudo (contadores + os tres mapas) bateu certinho.
+         */
         public long decisionHash() {
-            long h = 1125899906842597L;
+            long h = 1125899906842597L;   // valor inicial arbitrario (so pra nao comecar de 0)
             h = 31 * h + acceptedCount;
             h = 31 * h + rejectedCount;
             h = 31 * h + totalFeeCents;
@@ -69,6 +90,7 @@ public final class TransactionEngine {
             return h;
         }
 
+        /** Combina no hash `h` cada entrada (chave, contagem) do mapa `m`, uma de cada vez. */
         private static long mix(long h, Map<String, Long> m) {
             for (Map.Entry<String, Long> e : m.entrySet()) {    // TreeMap = ordem estavel
                 for (int i = 0; i < e.getKey().length(); i++) {
@@ -79,6 +101,7 @@ public final class TransactionEngine {
             return h;
         }
 
+        /** Texto final que vira o golden file: e essa string que e comparada entre original e ofuscado. */
         @Override public String toString() {
             return "accepted=" + acceptedCount
                  + " rejected=" + rejectedCount
@@ -93,18 +116,30 @@ public final class TransactionEngine {
 
     // ---- Estado (saldos) -------------------------------------------------------------
 
+    // Conta -> Saldo em centavos (ex: "ACCT-42" -> 1000000 = R$10.000,00)
     private final Map<String, Long> balances = new HashMap<>();
 
-    /** Reinicializa os saldos. Deve ser chamado antes de cada run/iteracao. */
+    /**
+     * "Zera o banco": limpa todos os saldos e da o mesmo saldo inicial para
+     * cada conta que aparece no lote de ordens.
+     *
+     * Precisa ser chamado antes de cada execucao (run) ou iteracao de
+     * benchmark, senao o saldo vai sendo consumido pelas compras aceitas e,
+     * de uma rodada para a outra, mais ordens seriam rejeitadas por falta de
+     * saldo (INSUFFICIENT_FUNDS) so por causa do acumulo -- nao porque a
+     * ordem em si seja invalida. Isso enviesaria tanto o Summary (golden
+     * file) quanto os tempos medidos no benchmark.
+     */
     public void resetBalances(Order[] orders, long initialCents) {
         balances.clear();
         for (Order o : orders) {
+            // putIfAbsent: se a conta ja apareceu antes no loop, mantem o
+            // saldo que ja foi setado (nao sobrescreve de novo).
             balances.putIfAbsent(o.accountKey, initialCents);
         }
     }
 
     // Execução completa: processa todas as ordens e devolve um Summary
-
     public Summary run(Order[] orders) {
         Summary s = new Summary();
         for (Order o : orders) {
@@ -130,9 +165,11 @@ public final class TransactionEngine {
 
     // ---- Orquestracao (rico em control flow) --------------------------------------------
 
+    // Processamento da Ordem em 5 etapas
     public Result pipeline(Order o) {
         Result res = new Result();
 
+        // Valida campos e regras por segmento (EQUITY, FX, CRYPTO, FIXED_INCOME).
         String validation = validate(o);
         if (!"OK".equals(validation)) {
             res.accepted = false;
@@ -140,6 +177,8 @@ public final class TransactionEngine {
             return res;
         }
 
+        // Calcula score de risco (LOW/MEDIUM/HIGH/BLOCKED) 
+        // somando pontos por segmento/lado/ativo.
         res.riskTier = assessRisk(o);
         if ("BLOCKED".equals(res.riskTier)) {
             res.accepted = false;
@@ -147,11 +186,13 @@ public final class TransactionEngine {
             return res;
         }
 
+        // Calcula taxa em bps conforme segmento e risco
         long gross = o.quantity * o.priceCents;
         res.feeCents = computeFee(o, gross, res.riskTier);
         res.netAmountCents = "BUY".equals(o.side) ? gross + res.feeCents
                                                   : gross - res.feeCents;
 
+        // Verifica e debita saldo da conta (estado mutável em HashMap)
         String check = checkBalanceAndReserve(o, res.netAmountCents);
         if (!"OK".equals(check)) {
             res.accepted = false;
@@ -159,6 +200,7 @@ public final class TransactionEngine {
             return res;
         }
 
+        // Decide para qual venue a ordem vai (B3, FX_DESK, TESOURO, OTC, etc).
         res.routedVenue = route(o);
         res.accepted = true;
         return res;

@@ -11,10 +11,13 @@ import com.finance.perf.OrderFactory;
  *   java -cp original.jar   com.finance.engine.CorrectnessRunner > golden_original.txt
  *   java -cp obfuscated.jar com.finance.engine.CorrectnessRunner > golden_obfuscated.txt
  *   diff golden_original.txt golden_obfuscated.txt   # deve ser vazio
- *
- * Nota: se o Allatori renomear CorrectnessRunner, mantenha esta classe
- * (e OrderFactory) fora do escopo de renaming OU use o entry point
- * preservado via keep no config.xml.
+ * 
+ * Gera o "golden file": roda o motor com ordens determinísticas em 3 tamanhos (5000/20000/50000) 
+ * e imprime o Summary. É comparado (diff) entre o jar original e cada jar ofuscado para provar 
+ * que a ofuscação não mudou o comportamento. Está tecnicamente dentro do pacote ofuscado, mas 
+ * seu nome e entry point são preservados via <keep-names> no config do Allatori, então continua 
+ * invocável via java -cp ... com.finance.engine.CorrectnessRunner.
+ *      
  */
 public final class CorrectnessRunner {
 
