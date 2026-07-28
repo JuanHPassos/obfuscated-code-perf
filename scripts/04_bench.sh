@@ -22,7 +22,7 @@ RESULTS="results"
 mkdir -p "$RESULTS"
 
 # Parametros JMH (batem com as anotacoes do benchmark; explicitos p/ reprodutibilidade)
-JMH_ARGS=(-f 5 -wi 10 -i 20 -foe true)
+JMH_ARGS=(-f 10 -wi 10 -i 20 -foe true)
 
 is_arm=0
 case "$HOST_ARCH" in aarch64|arm*) is_arm=1 ;; esac

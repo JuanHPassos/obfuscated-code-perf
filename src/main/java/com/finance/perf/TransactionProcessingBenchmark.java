@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * Correcoes de metodo em relacao a versao original:
  *   - @Setup(Level.Iteration): reinicia saldos a cada iteracao,
  *     evitando o vies do "saldo drenado" ao longo das 10 iteracoes.
- *   - @Fork(5): mais robustez estatistica entre JVMs.
+ *   - @Fork(10): mais robustez estatistica entre JVMs.
  *   - Motor separado -> mesmo codigo usado em correcao e decompilacao.
  */
 @BenchmarkMode(Mode.AverageTime)
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Thread)
 @Warmup(iterations = 10, time = 1)
 @Measurement(iterations = 20, time = 1)
-@Fork(value = 5)
+@Fork(value = 10)
 public class TransactionProcessingBenchmark {
 
     private static final long INITIAL_BALANCE_CENTS = 10_000_000_00L;
