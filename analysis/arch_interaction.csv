@@ -1,0 +1,13 @@
+size,profile,arch_a,arch_b,overhead_diff_%_(b_minus_a),diff_ci_lo,diff_ci_hi,p_value,n_forks_a,n_forks_b,p_value_holm,significant_arch_diff_5%
+5000,baseline,aarch64,x86_64,2.04,-1.02,5.37,0.2012,5,5,0.2012,False
+5000,flow,aarch64,x86_64,3.06,0.63,5.93,0.0096,5,5,0.0192,True
+5000,flowstring,aarch64,x86_64,5.42,2.94,8.31,0.0,5,5,0.0,True
+5000,string,aarch64,x86_64,4.8,2.31,7.87,0.0,5,5,0.0,True
+20000,baseline,aarch64,x86_64,0.64,-1.58,2.78,0.5534,5,5,1.0,False
+20000,flow,aarch64,x86_64,0.82,-1.19,2.75,0.4156,5,5,1.0,False
+20000,flowstring,aarch64,x86_64,-1.49,-4.83,1.67,0.3766,5,5,1.0,False
+20000,string,aarch64,x86_64,1.94,0.26,3.62,0.0216,5,5,0.0864,False
+50000,baseline,aarch64,x86_64,1.15,-0.62,3.13,0.2184,5,5,0.6552,False
+50000,flow,aarch64,x86_64,-0.03,-1.93,2.02,0.9678,5,5,1.0,False
+50000,flowstring,aarch64,x86_64,-0.17,-3.68,2.88,0.9398,5,5,1.0,False
+50000,string,aarch64,x86_64,1.7,-0.43,3.94,0.1272,5,5,0.5088,False

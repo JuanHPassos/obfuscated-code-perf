@@ -31,8 +31,34 @@ Colunas de analysis/summary.csv:
   cliffs_delta        tamanho de efeito nao-parametrico em [-1, 1].
   n_forks             nº de forks (amostras) usados na inferencia.
 
+Alem da comparacao "perfil vs. original" dentro de cada (arch, size), o script
+tambem testa se o overhead de um perfil DIFERE entre pares de arquiteturas
+(ex.: ARM vs. x86_64) -- ver analyze_arch_interaction(). Isso e necessario
+porque "significativo em x86_64, nao-significativo em aarch64" (o que a
+tabela summary.csv por si so sugere) NAO implica que a diferenca entre as
+duas arquiteturas seja, ela mesma, significativa (Gelman & Stern, 2006).
+O contraste e feito via bootstrap da diferenca de overheads, sem assumir
+normalidade/homocedasticidade -- a mesma cautela estatistica do restante do
+script.
+
+Colunas de analysis/arch_interaction.csv:
+  size                        parametro 'size' do benchmark.
+  profile                     perfil de ofuscacao (!= original).
+  arch_a, arch_b              par de arquiteturas comparado (arch_a < arch_b).
+  overhead_diff_%_(b_minus_a) overhead_%(arch_b) - overhead_%(arch_a), ambos
+                              vs. o 'original' da respectiva arquitetura.
+  diff_ci_lo/hi               IC 95% da diferenca acima, via bootstrap.
+  p_value                     p-valor bootstrap (2x a proporcao de amostras
+                              que cruzam zero).
+  p_value_holm                p-valor ajustado por Holm-Bonferroni na familia
+                              (size, arch_a, arch_b), atraves dos perfis.
+  significant_arch_diff_5%    True se p_value_holm < 0.05: o overhead desse
+                              perfil difere entre as duas arquiteturas.
+  n_forks_a, n_forks_b        nº de forks usados de cada lado.
+
 Saidas:
   analysis/summary.csv
+  analysis/arch_interaction.csv
   analysis/overhead-<arch>-size<N>.png  (barras com error bars)
 
 Requisitos: numpy, scipy, pandas, matplotlib
@@ -183,6 +209,34 @@ def bootstrap_overhead_ci(profile: np.ndarray, base: np.ndarray) -> tuple[float,
     return float(lo), float(hi)
 
 
+def arch_overhead_diff_ci(
+    profile_a: np.ndarray, base_a: np.ndarray, profile_b: np.ndarray, base_b: np.ndarray
+) -> tuple[float, float, float, float]:
+    """Bootstrap da diferenca de overhead (%) entre duas arquiteturas.
+
+    overhead_x(%) = (mean(profile_x)/mean(base_x) - 1) * 100, para x em {a, b}.
+    Reamostra os 4 grupos independentemente (nao ha pareamento entre forks de
+    arquiteturas diferentes) e devolve a distribuicao de overhead_b - overhead_a.
+
+    Returns:
+        Tupla (diff_pontual, ic_lo, ic_hi, p_valor). NaN se dados insuficientes.
+    """
+    if min(len(profile_a), len(base_a), len(profile_b), len(base_b)) < 2:
+        return float("nan"), float("nan"), float("nan"), float("nan")
+    pa = RNG.choice(profile_a, size=(N_BOOTSTRAP, len(profile_a)), replace=True).mean(axis=1)
+    ba = RNG.choice(base_a, size=(N_BOOTSTRAP, len(base_a)), replace=True).mean(axis=1)
+    pb = RNG.choice(profile_b, size=(N_BOOTSTRAP, len(profile_b)), replace=True).mean(axis=1)
+    bb = RNG.choice(base_b, size=(N_BOOTSTRAP, len(base_b)), replace=True).mean(axis=1)
+    diff = (pb / bb - 1.0) * 100.0 - (pa / ba - 1.0) * 100.0
+    point = (
+        (float(np.mean(profile_b)) / float(np.mean(base_b)) - 1.0) * 100.0
+        - (float(np.mean(profile_a)) / float(np.mean(base_a)) - 1.0) * 100.0
+    )
+    lo, hi = np.percentile(diff, [2.5, 97.5])
+    p = min(2.0 * min(float(np.mean(diff <= 0)), float(np.mean(diff >= 0))), 1.0)
+    return point, float(lo), float(hi), p
+
+
 def holm_bonferroni(pvals: list[float]) -> np.ndarray:
     """Holm-Bonferroni; retorna p ajustados na ordem original (NaN ignorados)."""
     p = np.asarray(pvals, float)
@@ -298,6 +352,64 @@ def analyze(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out)
 
 
+def analyze_arch_interaction(df: pd.DataFrame) -> pd.DataFrame:
+    """Testa se o overhead de cada perfil difere entre pares de arquiteturas.
+
+    Para cada size e cada par de arquiteturas presentes, bootstrapa
+    overhead_%(arch_b) - overhead_%(arch_a) (ambos vs. o 'original' da
+    respectiva arquitetura) para cada perfil != original. Os p-valores dos
+    perfis formam uma familia por (size, arch_a, arch_b), corrigida via
+    Holm-Bonferroni -- mesmo padrao usado em analyze() para perfil vs.
+    original, aplicado aqui a arquitetura vs. arquitetura.
+
+    Returns:
+        DataFrame com uma linha por (size, profile, arch_a, arch_b). Vazio se
+        houver menos de duas arquiteturas nos dados.
+    """
+    archs = sorted(df["arch"].unique())
+    out = []
+    for size, grp_size in df.groupby("size"):
+        by_arch = {
+            arch: {r.profile: np.asarray(r.samples, float) for r in g.itertuples()}
+            for arch, g in grp_size.groupby("arch")
+        }
+        for i, arch_a in enumerate(archs):
+            for arch_b in archs[i + 1 :]:
+                rows: list[dict] = []
+                raw_p: list[float] = []
+                for profile in PROFILES_ORDER:
+                    if profile == "original":
+                        continue
+                    prof_a = by_arch.get(arch_a, {}).get(profile)
+                    base_a = by_arch.get(arch_a, {}).get("original")
+                    prof_b = by_arch.get(arch_b, {}).get(profile)
+                    base_b = by_arch.get(arch_b, {}).get("original")
+                    if prof_a is None or base_a is None or prof_b is None or base_b is None:
+                        continue
+                    diff, lo, hi, p = arch_overhead_diff_ci(prof_a, base_a, prof_b, base_b)
+                    rows.append(
+                        {
+                            "size": size,
+                            "profile": profile,
+                            "arch_a": arch_a,
+                            "arch_b": arch_b,
+                            "overhead_diff_%_(b_minus_a)": None if np.isnan(diff) else round(diff, 2),
+                            "diff_ci_lo": None if np.isnan(lo) else round(lo, 2),
+                            "diff_ci_hi": None if np.isnan(hi) else round(hi, 2),
+                            "p_value": None if np.isnan(p) else round(p, 6),
+                            "n_forks_a": len(prof_a),
+                            "n_forks_b": len(prof_b),
+                        }
+                    )
+                    raw_p.append(p)
+                adj = holm_bonferroni(raw_p)
+                for row, padj in zip(rows, adj):
+                    row["p_value_holm"] = None if np.isnan(padj) else round(float(padj), 6)
+                    row["significant_arch_diff_5%"] = (not np.isnan(padj)) and padj < 0.05
+                    out.append(row)
+    return pd.DataFrame(out)
+
+
 def plot(summary: pd.DataFrame) -> None:
     """Gera um grafico de barras (tempo medio + IC 95%) por (arch, size).
 
@@ -333,6 +445,19 @@ def main() -> None:
     with pd.option_context("display.max_columns", None, "display.width", 160):
         print(summary.to_string(index=False))
     print()
+
+    arch_interaction = analyze_arch_interaction(df)
+    if not arch_interaction.empty:
+        arch_interaction = arch_interaction.sort_values(["size", "profile", "arch_a", "arch_b"])
+        arch_csv = os.path.join(OUT_DIR, "arch_interaction.csv")
+        arch_interaction.to_csv(arch_csv, index=False)
+        print(f"Comparacao entre arquiteturas salva em {arch_csv}\n")
+        with pd.option_context("display.max_columns", None, "display.width", 160):
+            print(arch_interaction.to_string(index=False))
+        print()
+    else:
+        print("[aviso] menos de duas arquiteturas em results/: comparacao ARM vs. x86 pulada.\n")
+
     plot(summary)
     min_forks = int(summary["n_forks"].min()) if not summary.empty else 0
     if min_forks < 5:
