@@ -1,5 +1,4 @@
 target
-results/**/*.json
 resilience/responses/
 analysis/figures/
 *.log

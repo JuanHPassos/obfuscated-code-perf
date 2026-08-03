@@ -59,7 +59,8 @@ Colunas de analysis/arch_interaction.csv:
 Saidas:
   analysis/summary.csv
   analysis/arch_interaction.csv
-  analysis/overhead-<arch>-size<N>.png  (barras com error bars)
+  analysis/overhead-<arch>-size<N>.png  (barras com error bars, por arch+size)
+  analysis/overhead-vs-size.png         (overhead x size, 1 linha/arch, facetado por perfil)
 
 Requisitos: numpy, scipy, pandas, matplotlib
   pip install numpy scipy pandas matplotlib
@@ -91,6 +92,10 @@ PROFILES_ORDER = ["original", "baseline", "flow", "string", "flowstring"]
 FNAME_RE = re.compile(r"jmh-(?P<arch>[^-]+)-(?P<profile>[a-z]+)\.json$")
 N_BOOTSTRAP = 10_000                 # reamostragens do IC de overhead
 RNG = np.random.default_rng(20260727)  # seed fixa -> resultados reproduziveis
+
+# Paleta categorica (slots 1-2, ordem fixa) -- ver dataviz skill / references/palette.md.
+ARCH_COLORS = {"x86_64": "#2a78d6", "aarch64": "#eb6834"}
+ARCH_FALLBACK_COLORS = ["#1baf7a", "#eda100", "#e87ba4", "#4a3aa7", "#e34948"]
 
 
 def fork_means(primary: dict) -> list[float]:
@@ -433,6 +438,65 @@ def plot(summary: pd.DataFrame) -> None:
         print(f" grafico: {fig}")
 
 
+def plot_overhead_vs_size(summary: pd.DataFrame) -> None:
+    """Overhead (%) vs. size, uma linha por arquitetura, facetado por perfil.
+
+    Complementa plot() (barras isoladas por arch+size): aqui o objetivo e
+    visualizar como o overhead evolui com o tamanho do lote e comparar as
+    arquiteturas lado a lado no mesmo eixo, para efeitos como diluicao do
+    overhead relativo em lotes maiores. Cor fixa por arquitetura (paleta
+    categorica, mesma identidade em todos os paineis) via ARCH_COLORS.
+    """
+    profiles = [p for p in PROFILES_ORDER if p != "original" and p in summary["profile"].values]
+    archs = sorted(summary["arch"].unique())
+    sizes = sorted(summary["size"].unique())
+    if len(archs) < 2 or not profiles:
+        return
+
+    ncols = 2
+    nrows = -(-len(profiles) // ncols)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(10, 3.5 * nrows), sharex=True, sharey=True)
+    axes = np.atleast_1d(axes).flatten()
+
+    for ax, profile in zip(axes, profiles):
+        sub = summary[summary["profile"] == profile]
+        for j, arch in enumerate(archs):
+            g = sub[sub["arch"] == arch].set_index("size").reindex(sizes)
+            color = ARCH_COLORS.get(arch, ARCH_FALLBACK_COLORS[j % len(ARCH_FALLBACK_COLORS)])
+            xpos = range(len(sizes))
+            y = g["overhead_%_vs_original"].to_numpy(dtype=float)
+            lo = g["overhead_ci_lo"].to_numpy(dtype=float)
+            hi = g["overhead_ci_hi"].to_numpy(dtype=float)
+            ax.plot(xpos, y, marker="o", markersize=8, linewidth=2, color=color, label=arch)
+            if not np.isnan(lo).all():
+                ax.fill_between(xpos, lo, hi, color=color, alpha=0.15, linewidth=0)
+        ax.axhline(0, color="#c3c2b7", linewidth=1, linestyle="--", zorder=0)
+        ax.set_title(profile, color="#0b0b0b")
+        ax.set_xticks(range(len(sizes)))
+        ax.set_xticklabels([str(s) for s in sizes])
+        ax.grid(axis="y", color="#e1e0d9", linewidth=0.8)
+        ax.set_axisbelow(True)
+        ax.tick_params(colors="#898781")
+        for spine in ("top", "right"):
+            ax.spines[spine].set_visible(False)
+
+    for ax in axes[len(profiles):]:
+        ax.set_visible(False)
+    for ax in axes[max(0, len(profiles) - ncols) : len(profiles)]:
+        ax.set_xlabel("size (nº de ordens)", color="#52514e")
+    for ax in axes[::ncols]:
+        ax.set_ylabel("overhead (%) vs. original", color="#52514e")
+
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=len(archs), frameon=False, bbox_to_anchor=(0.5, 1.04))
+    fig.suptitle("Overhead da ofuscacao por tamanho de lote", y=1.1, color="#0b0b0b")
+    fig.tight_layout()
+    out = os.path.join(OUT_DIR, "overhead-vs-size.png")
+    fig.savefig(out, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    print(f" grafico: {out}")
+
+
 def main() -> None:
     """Orquestra a analise: le os JSON, gera summary.csv, imprime e plota."""
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -459,6 +523,7 @@ def main() -> None:
         print("[aviso] menos de duas arquiteturas em results/: comparacao ARM vs. x86 pulada.\n")
 
     plot(summary)
+    plot_overhead_vs_size(summary)
     min_forks = int(summary["n_forks"].min()) if not summary.empty else 0
     if min_forks < 5:
         print(
