@@ -14,8 +14,11 @@ run_pipeline.sh            # orquestra build -> ofuscar -> validar correcao
 allatori/
   config-baseline.xml      # perfil: apenas renaming
   config-flow.xml          # perfil: renaming + control flow
-  config-string.xml        # perfil: renaming + string encryption
-  config-flowstring.xml    # perfil: renaming + control flow + string encryption
+  config-string.xml        # perfil: renaming + string encryption (entrada: app-strenc.jar)
+  config-flowstring.xml    # perfil: renaming + control flow + string encryption (entrada: app-strenc.jar)
+zkm/
+  config-stringenc.zkm     # T3a: string encryption do motor via ZKM (Allatori Educational nao suporta)
+  zkmEval/, zkmDocs/       # distribuicao ZKM baixada (nao versionada)
 scripts/
   00_check_env.sh          # verifica ferramentas/versoes
   02_obfuscate.sh          # T3  roda o Allatori (gera os 4 JARs ofuscados)
@@ -39,7 +42,8 @@ Pastas de saída (`target/`, `correctness/`, `results/`, `resilience/`, `analysi
 | --- | --- | --- |
 | JDK 17 (ex.: Temurin) | build e execução | **mesma build** no x86 e no ARM |
 | Maven | build (T2) | `mvn -v` |
-| Allatori (`allatori.jar`) | ofuscação (T3) | da sua licença/distribuição, guarde em `allatori/` |
+| Allatori (`allatori.jar`) | ofuscação (T3) | da sua licença/distribuição, guarde em `allatori/`; a edição Educational NÃO faz string encryption |
+| ZKM (`ZKM.jar`) | string encryption do motor (T3a) | avaliação Zelix KlassMaster, guarde em `zkm/zkmEval/` |
 | CFR (`cfr.jar`) | decompilação (T7) | opcional, só para resiliência; guarde em `cfr/` |
 | Python 3 + libs | análise (T8) | `pip install numpy scipy pandas matplotlib` |
 
@@ -49,6 +53,7 @@ Os scripts são **bash**. No Ubuntu/Raspberry Pi rodam nativamente; no Windows, 
 
 ```bash
 export ALLATORI_JAR=allatori/allatori.jar       # necessário para T3
+export ZKM_JAR=zkm/zkmEval/ZKM.jar              # necessário para T3 (T3a: string encryption do motor)
 export CFR_JAR=cfr/cfr-0.152.jar                # necessário para T7
 
 ```

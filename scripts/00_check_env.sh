@@ -18,6 +18,7 @@ need python3 "--version"
 echo
 echo "== Variaveis esperadas =="
 echo "ALLATORI_JAR = ${ALLATORI_JAR:-<nao definido>}"
+echo "ZKM_JAR      = ${ZKM_JAR:-<nao definido>}"
 echo "CFR_JAR      = ${CFR_JAR:-<nao definido>}"
 
 echo

@@ -1,2 +1,40 @@
 Summary for target/app-flowstring.jar
 Decompiled with CFR 0.152
+
+
+com.finance.engine.A
+----------------------------
+
+<clinit>()
+  Unable to fully structure code
+
+
+com.finance.engine.l
+----------------------------
+
+C(com.finance.engine.TransactionEngine$Order long java.lang.String )
+  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
+H(com.finance.engine.TransactionEngine$Order )
+  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
+D(com.finance.engine.TransactionEngine$Order )
+  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
+<clinit>()
+  Unable to fully structure code
+C(com.finance.engine.TransactionEngine$Order )
+  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
+
+
+com.finance.engine.J
+----------------------------
+
+<clinit>()
+  Unable to fully structure code
+C(java.lang.String long )
+  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
+
+
+com.finance.engine.CorrectnessRunner
+----------------------------
+
+<clinit>()
+  Handled impossible loop by duplicating code

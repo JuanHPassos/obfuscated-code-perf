@@ -8,4 +8,5 @@ dependency-reduced-pom.xml
 allatori/*.jar
 cfr/*.jar
 .venv
-zkm
+zkm/zkmEval
+zkm/zkmDocs

@@ -1,0 +1,40 @@
+// T3a - Pre-passo de string encryption (ZKM), rodado ANTES do Allatori.
+//
+// So abre os .class de com.finance.engine.* (extraidos isoladamente por
+// scripts/02_obfuscate.sh em target/zkm-engine-in/). Isso garante que
+// nenhuma outra classe do uber-jar (harness JMH, OrderFactory, libs de
+// terceiros) seja sequer tocada por este passo - nem renomeacao, nem
+// remocao de line numbers/local variables, nem preverify: elas so
+// seriam afetadas se fossem "opened", e aqui so o motor e aberto.
+//
+// O jar original entra so como CLASSPATH (nao "opened"), para resolver
+// a referencia CorrectnessRunner -> com.finance.perf.OrderFactory.
+//
+// Renomeacao e control-flow ficam desligados aqui - isso e deliberado:
+// o Allatori (rodando depois, sobre o resultado deste script) e quem
+// cuida de renaming + control-flow, exatamente como ja faz hoje nos
+// perfis baseline/flow/flowstring.
+//
+// Entrada:  target/zkm-engine-in/com/finance/engine/*.class
+// Saida:    target/zkm-engine-out/com/finance/engine/*.class
+//           (scripts/02_obfuscate.sh injeta esses .class de volta no
+//           jar, substituindo os originais, para formar target/app-strenc.jar)
+
+classpath "target/app-original.jar";
+
+open "target/zkm-engine-in/com/finance/engine/*.class";
+
+// Nao renomeia NADA aqui - fica a cargo do Allatori.
+exclude
+    *.^* and
+    *.* * and
+    *.* *(*)
+    ;
+
+obfuscate
+    changeLogFileOut=""
+    obfuscateFlow=none
+    encryptStringLiterals=enhanced
+    ;
+
+saveAll "target/zkm-engine-out";
