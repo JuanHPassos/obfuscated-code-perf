@@ -6,4 +6,6 @@ analysis/figures/
 dependency-reduced-pom.xml
 .vscode
 allatori/*.jar
+cfr/*.jar
 .venv
+zkm

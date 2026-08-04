@@ -39,8 +39,8 @@ Pastas de saída (`target/`, `correctness/`, `results/`, `resilience/`, `analysi
 | --- | --- | --- |
 | JDK 17 (ex.: Temurin) | build e execução | **mesma build** no x86 e no ARM |
 | Maven | build (T2) | `mvn -v` |
-| Allatori (`allatori.jar`) | ofuscação (T3) | da sua licença/distribuição |
-| CFR (`cfr.jar`) | decompilação (T7) | opcional, só para resiliência |
+| Allatori (`allatori.jar`) | ofuscação (T3) | da sua licença/distribuição, guarde em `allatori/` |
+| CFR (`cfr.jar`) | decompilação (T7) | opcional, só para resiliência; guarde em `cfr/` |
 | Python 3 + libs | análise (T8) | `pip install numpy scipy pandas matplotlib` |
 
 Os scripts são **bash**. No Ubuntu/Raspberry Pi rodam nativamente; no Windows, use WSL ou Git Bash.
@@ -48,8 +48,8 @@ Os scripts são **bash**. No Ubuntu/Raspberry Pi rodam nativamente; no Windows, 
 ### Variáveis de ambiente
 
 ```bash
-export ALLATORI_JAR=/caminho/para/allatori.jar  # necessário para T3
-export CFR_JAR=/caminho/para/cfr.jar            # necessário para T7
+export ALLATORI_JAR=allatori/allatori.jar       # necessário para T3
+export CFR_JAR=cfr/cfr-0.152.jar                # necessário para T7
 
 ```
 
@@ -128,7 +128,7 @@ Cada perfil roda com `-f 10 -wi 10 -i 20` (10 forks, 10 iterações de warmup, 2
 ### T7 - Resiliência (decompilação + LLM)
 
 ```bash
-export CFR_JAR=/caminho/para/cfr.jar
+export CFR_JAR=cfr/cfr-0.152.jar
 bash scripts/05_decompile.sh
 # decompila com.finance.engine.* de cada estado em resilience/<perfil>/
 

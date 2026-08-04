@@ -8,14 +8,14 @@
 # O delta entre "original decompilado" e "ofuscado decompilado" e o efeito
 # real da ofuscacao (o que se perde por decompilacao e normal e nao conta).
 #
-# Pre-requisito: CFR_JAR apontando para o cfr.jar
+# Pre-requisito: CFR_JAR apontando para o cfr.jar (ex.: cfr/cfr-0.152.jar)
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-: "${CFR_JAR:?defina CFR_JAR=/caminho/para/cfr.jar}"
+: "${CFR_JAR:?defina CFR_JAR=/caminho/para/cfr.jar (ex.: export CFR_JAR=$ROOT/cfr/cfr-0.152.jar)}"
 
 OUT="resilience"
 FILTER="com.finance.engine.*"
