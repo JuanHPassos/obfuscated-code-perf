@@ -1,21 +1,21 @@
 	Command being timed: "taskset -c 0 java -jar target/app-baseline.jar -f 10 -wi 10 -i 20 -foe true -rf json -rff results/jmh-x86_64-baseline.json"
-	User time (seconds): 908.26
-	System time (seconds): 2.09
+	User time (seconds): 908.39
+	System time (seconds): 2.15
 	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 15:12.08
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 15:12.19
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 97640
+	Maximum resident set size (kbytes): 96444
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 635779
-	Voluntary context switches: 214834
-	Involuntary context switches: 198665
+	Minor (reclaiming a frame) page faults: 638607
+	Voluntary context switches: 210337
+	Involuntary context switches: 194954
 	Swaps: 0
-	File system inputs: 2776
-	File system outputs: 2952
+	File system inputs: 2792
+	File system outputs: 2976
 	Socket messages sent: 0
 	Socket messages received: 0
 	Signals delivered: 0
