@@ -35,6 +35,6 @@ done
 echo
 echo "Decompilacao concluida em $OUT/."
 echo "Proximo passo (T7 parte 2, manual/semi-automatico):"
-echo "  1) Envie cada estado decompilado a LLM usando scripts/prompt-template.txt"
+echo "  1) Envie cada estado decompilado (arquivos .java, exceto CorrectnessRunner.java) a LLM usando scripts/prompt-template.md"
 echo "  2) Pontue com a rubrica em docs/Check.md"
 echo "  3) Repita N=5..10 por modelo (Claude/Gemini) e agregue media +/- desvio"

@@ -26,7 +26,7 @@ scripts/
   04_bench.sh              # T6  coleta JMH (+ termia no ARM)
   05_decompile.sh          # T7  decompila o motor com CFR
   07_analyze.py            # T8  estatistica + graficos
-  prompt-template.txt      # T7  prompt padrao para a LLM
+  prompt-template.md       # T7  prompt padrao para a LLM (+ protocolo de avaliacao)
 src/main/java/com/finance/ # motor (engine) + harness (perf)
 docs/                      # Rubrica de resiliencia (Check.md), etc.
 
@@ -139,7 +139,7 @@ bash scripts/05_decompile.sh
 
 ```
 
-Depois, para cada estado, envie o código decompilado à LLM usando `scripts/prompt-template.txt` e pontue as respostas com a rubrica de 51 itens em [docs/Check.md](https://www.google.com/search?q=docs/Check.md). Repita N=5-10 vezes por modelo (Claude, Gemini), com temperatura baixa, e agregue média ± desvio. O `original` decompilado é a referência: o delta até o ofuscado é o efeito real da ofuscação.
+Depois, para cada estado, anexe os arquivos `.java` decompilados (exceto `CorrectnessRunner.java`) à LLM junto com o prompt de `scripts/prompt-template.md`, e pontue as respostas — **você**, não a LLM que gerou a análise — com a rubrica de 51 itens em [docs/Check.md](https://www.google.com/search?q=docs/Check.md) (ver seção 3 do prompt-template para o motivo). Repita N=5-10 vezes por modelo (Claude, Gemini), com temperatura baixa, e agregue média ± desvio. O `original` decompilado é a referência: o delta até o ofuscado é o efeito real da ofuscação.
 
 ### T8 - Análise estatística
 

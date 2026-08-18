@@ -1,0 +1,4 @@
+size,anova_F_interaction,anova_p_interaction,significant_interaction_5%
+5000,231.006,0.0,True
+20000,319.215,0.0,True
+50000,981.662,0.0,True
