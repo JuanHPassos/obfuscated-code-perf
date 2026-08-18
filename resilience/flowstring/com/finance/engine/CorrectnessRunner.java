@@ -3,24 +3,30 @@
  */
 package com.finance.engine;
 
-import com.finance.engine.A;
 import com.finance.engine.TransactionEngine$Order;
-import com.finance.engine.l;
+import com.finance.engine.b;
+import com.finance.engine.d;
 import com.finance.perf.OrderFactory;
-import org.apache.commons.math3.geometry.euclidean.oned.Interval;
-import org.apache.commons.math3.stat.correlation.Covariance;
 
 public final class CorrectnessRunner {
-    private static final String D;
+    private static final String a;
 
-    public static void main(String[] a) {
-        int[] nArray;
-        for (int n : nArray = new int[]{5000, 20000, 50000}) {
-            TransactionEngine$Order[] transactionEngine$OrderArray = OrderFactory.deterministicOrders(n);
-            l l2 = new l();
-            l2.C(transactionEngine$OrderArray, 1000000000L);
-            A a2 = l2.C(transactionEngine$OrderArray);
-            System.out.println(D + n + Covariance.C("-") + String.valueOf(a2));
+    private CorrectnessRunner() {
+    }
+
+    public static void main(String[] stringArray) {
+        int[] nArray = new int[]{5000, 20000, 50000};
+        int n = b.b;
+        for (int n2 : nArray) {
+            TransactionEngine$Order[] transactionEngine$OrderArray = OrderFactory.deterministicOrders(n2);
+            b b2 = new b();
+            b2.a(transactionEngine$OrderArray, 1000000000L);
+            d d2 = b2.a(transactionEngine$OrderArray);
+            System.out.println(a + n2 + " " + String.valueOf(d2));
+            if (n == 0) continue;
+            int n3 = TransactionEngine$Order.b;
+            TransactionEngine$Order.b = ++n3;
+            break;
         }
     }
 
@@ -36,7 +42,7 @@ public final class CorrectnessRunner {
             char[] cArray2;
             int n3;
             block11: {
-                char[] cArray3 = Interval.C("\u001eMpz{").toCharArray();
+                char[] cArray3 = "\\?B6s".toCharArray();
                 n3 = 0;
                 int n4 = cArray3.length;
                 cArray2 = cArray3;
@@ -51,15 +57,15 @@ public final class CorrectnessRunner {
                 char[] cArray5 = cArray2;
                 int n5 = n3;
                 while (true) {
-                    char c = cArray4[n5];
-                    cArray4[n5] = (char)(c ^ (switch (n3 % 7) {
-                        case 0 -> 85;
-                        case 1 -> 120;
-                        case 2 -> 50;
-                        case 3 -> 67;
-                        case 4 -> 94;
-                        case 5 -> 73;
-                        default -> 19;
+                    char c2 = cArray4[n5];
+                    cArray4[n5] = (char)(c2 ^ (switch (n3 % 7) {
+                        case 0 -> 15;
+                        case 1 -> 118;
+                        case 2 -> 24;
+                        case 3 -> 115;
+                        case 4 -> 78;
+                        case 5 -> 38;
+                        default -> 1;
                     }));
                     ++n3;
                     cArray2 = cArray5;
@@ -74,11 +80,7 @@ public final class CorrectnessRunner {
                 n = n2;
             } while (n2 > n3);
         }
-        D = new String(cArray).intern();
-    }
-
-    private /* synthetic */ CorrectnessRunner() {
-        CorrectnessRunner a;
+        a = new String(cArray).intern();
     }
 }
 

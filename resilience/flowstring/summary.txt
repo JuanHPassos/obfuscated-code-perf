@@ -2,35 +2,28 @@ Summary for target/app-flowstring.jar
 Decompiled with CFR 0.152
 
 
-com.finance.engine.A
+com.finance.engine.a
 ----------------------------
 
+a(java.lang.String long )
+  Unable to fully structure code
 <clinit>()
   Unable to fully structure code
 
 
-com.finance.engine.l
+com.finance.engine.b
 ----------------------------
 
-C(com.finance.engine.TransactionEngine$Order long java.lang.String )
+b(com.finance.engine.TransactionEngine$Order )
+  Unable to fully structure code
+c(com.finance.engine.TransactionEngine$Order )
   Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
-H(com.finance.engine.TransactionEngine$Order )
+a(com.finance.engine.TransactionEngine$Order long java.lang.String )
   Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
-D(com.finance.engine.TransactionEngine$Order )
+d(com.finance.engine.TransactionEngine$Order )
   Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
 <clinit>()
   Unable to fully structure code
-C(com.finance.engine.TransactionEngine$Order )
-  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
-
-
-com.finance.engine.J
-----------------------------
-
-<clinit>()
-  Unable to fully structure code
-C(java.lang.String long )
-  Exception : org.benf.cfr.reader.bytecode.analysis.opgraph.op4rewriters.SwitchStringRewriter$TooOptimisticMatchException
 
 
 com.finance.engine.CorrectnessRunner
@@ -38,3 +31,10 @@ com.finance.engine.CorrectnessRunner
 
 <clinit>()
   Handled impossible loop by duplicating code
+
+
+com.finance.engine.d
+----------------------------
+
+<clinit>()
+  Unable to fully structure code

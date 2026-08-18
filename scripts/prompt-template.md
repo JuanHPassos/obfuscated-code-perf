@@ -36,7 +36,7 @@ fornecido.
 - Use o **mesmo** prompt acima para os 5 estados: `original`, `baseline`,
   `flow`, `string`, `flowstring`.
 - Não revele à LLM qual estado é (evita viés) — não mencione "obfuscated",
-  "Allatori", nomes de perfil, nem nomes de arquivo do repositório.
+  "ZKM", nomes de perfil, nem nomes de arquivo do repositório.
 - Cada repetição deve ser uma conversa **nova** (sem histórico de repetições
   anteriores do mesmo perfil), temperatura baixa (ex.: 0.2), N=5–10
   repetições por modelo.

@@ -3,25 +3,24 @@
  */
 package com.finance.engine;
 
-import com.finance.engine.TransactionEngine;
-import com.finance.engine.l;
-import com.finance.engine.m;
+import com.finance.engine.TransactionEngine$Order;
+import com.finance.engine.b;
+import com.finance.engine.d;
 import com.finance.perf.OrderFactory;
 
 public final class CorrectnessRunner {
-    public static void main(String[] a) {
-        int[] a2;
-        for (int a3 : a2 = new int[]{5000, 20000, 50000}) {
-            TransactionEngine.Order[] a4 = OrderFactory.deterministicOrders(a3);
-            l a5 = new l();
-            a5.l(a4, 1000000000L);
-            m a6 = a5.l(a4);
-            System.out.println("SIZE=" + a3 + " " + String.valueOf(a6));
-        }
+    private CorrectnessRunner() {
     }
 
-    private /* synthetic */ CorrectnessRunner() {
-        CorrectnessRunner a;
+    public static void main(String[] stringArray) {
+        int[] nArray;
+        for (int n : nArray = new int[]{5000, 20000, 50000}) {
+            TransactionEngine$Order[] transactionEngine$OrderArray = OrderFactory.deterministicOrders(n);
+            b b2 = new b();
+            b2.a(transactionEngine$OrderArray, 1000000000L);
+            d d2 = b2.a(transactionEngine$OrderArray);
+            System.out.println("SIZE=" + n + " " + String.valueOf(d2));
+        }
     }
 }
 

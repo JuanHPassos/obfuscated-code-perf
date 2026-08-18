@@ -24,6 +24,11 @@ for p in original baseline flow string flowstring; do
   jar="target/app-$p.jar"
   [[ -f "$jar" ]] || { echo "SKIP $p - $jar nao encontrado"; continue; }
   dst="$OUT/$p"
+  # CFR so escreve/atualiza; nao apaga .java de uma rodada anterior cujo
+  # nome de classe mudou (ex.: renaming diferente entre execucoes) - sem
+  # isso, sobras de uma ofuscacao antiga ficam misturadas com a atual e
+  # confundem a avaliacao de resiliencia.
+  rm -rf "$dst"
   mkdir -p "$dst"
   echo "== CFR $p =="
   java -jar "$CFR_JAR" "$jar" \

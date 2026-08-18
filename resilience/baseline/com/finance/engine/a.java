@@ -3,27 +3,26 @@
  */
 package com.finance.engine;
 
-final class G {
-    private /* synthetic */ G() {
-        G a;
+final class a {
+    private a() {
     }
 
-    static String l(String a, long a2) {
-        switch (a) {
+    static String a(String string, long l) {
+        switch (string) {
             case "EQUITY": {
-                if (a2 <= 500000000L) break;
+                if (l <= 500000000L) break;
                 return "REG_CVM_476_LIMIT";
             }
             case "FX": {
-                if (a2 <= 200000000L) break;
+                if (l <= 200000000L) break;
                 return "REG_BACEN_FX_CAP";
             }
             case "CRYPTO": {
-                if (a2 <= 50000000L) break;
+                if (l <= 50000000L) break;
                 return "REG_CRYPTO_MTF_CAP";
             }
             case "FIXED_INCOME": {
-                if (a2 <= 1000000000L) break;
+                if (l <= 1000000000L) break;
                 return "REG_TESOURO_LIMIT";
             }
         }

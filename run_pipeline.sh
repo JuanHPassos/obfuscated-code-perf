@@ -5,8 +5,8 @@
 # porque dependem do host (x86/ARM) e de ferramentas externas (CFR/LLM).
 #
 # Uso:
-#   ALLATORI_JAR=/caminho/allatori.jar ZKM_JAR=/caminho/ZKM.jar ./run_pipeline.sh
-#   ALLATORI_JAR=... ZKM_JAR=... ./run_pipeline.sh --bench   # inclui T6 no host atual
+#   ZKM_JAR=/caminho/ZKM.jar ./run_pipeline.sh
+#   ZKM_JAR=/caminho/ZKM.jar ./run_pipeline.sh --bench   # inclui T6 no host atual
 #
 set -euo pipefail
 
