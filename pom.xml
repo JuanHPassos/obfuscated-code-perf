@@ -13,7 +13,7 @@
 
     <name>Transacao Performance Benchmark (JMH)</name>
     <description>
-        Microbenchmark JMH para medir o overhead de ofuscacao (Allatori)
+        Microbenchmark JMH para medir o overhead de ofuscacao (ZKM)
         em codigo de processamento de transacoes financeiras.
     </description>
 
@@ -83,7 +83,7 @@
 
             <!--
                 maven-shade-plugin: gera o uber-jar (fat jar) autocontido e
-                executavel que sera posteriormente ofuscado pela Allatori.
+                executavel que sera posteriormente ofuscado pelo ZKM.
                 - finalName "app-original" => produz target/app-original.jar
                 - Main-Class = org.openjdk.jmh.Main (permite "java -jar ... -l")
                 - Remove as assinaturas (*.SF/*.DSA/*.RSA) para evitar

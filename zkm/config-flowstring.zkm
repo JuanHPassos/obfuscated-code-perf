@@ -1,0 +1,40 @@
+// T3 - Perfil FLOWSTRING (ZKM): renaming + control-flow + string encryption
+// do motor, todos juntos. Ver config-baseline.zkm para a explicacao
+// completa do open/exclude (identica aqui, so mudam
+// obfuscateFlow/encryptStringLiterals/saveAll).
+//
+// Entrada:  target/zkm-input/com/finance/{engine,perf}/**/*.class
+// Saida:    target/zkm-flowstring-out/...
+
+classpath "target/app-original.jar";
+
+open
+    "target/zkm-input/com/finance/engine/*.class"
+    "target/zkm-input/com/finance/perf/*"
+    ;
+
+exclude
+    *. and
+    com.finance.perf.* + and
+    com.finance.perf.jmh_generated.* + and
+    com.finance.engine.CorrectnessRunner + and
+    com.finance.engine.TransactionEngine$Order +
+    ;
+
+obfuscateFlowExclude
+    com.finance.perf.* and
+    com.finance.perf.jmh_generated.*
+    ;
+
+stringEncryptionExclude
+    com.finance.perf.* and
+    com.finance.perf.jmh_generated.*
+    ;
+
+obfuscate
+    changeLogFileOut=""
+    obfuscateFlow=aggressive
+    encryptStringLiterals=enhanced
+    ;
+
+saveAll "target/zkm-flowstring-out";

@@ -1,2 +1,17 @@
 Summary for target/app-flow.jar
 Decompiled with CFR 0.152
+
+
+com.finance.engine.a
+----------------------------
+
+a(java.lang.String long )
+  Unable to fully structure code
+
+
+com.finance.engine.b
+----------------------------
+
+b(com.finance.engine.TransactionEngine$Order )
+  Unable to fully structure code
+  Could not resolve type clashes

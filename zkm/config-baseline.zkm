@@ -1,0 +1,57 @@
+// T3 - Perfil BASELINE (ZKM, unico obfuscador do projeto): renaming apenas.
+// Sem control-flow, sem string encryption.
+//
+// O motor (com.finance.engine.*) E com.finance.perf.* (que referencia o
+// motor por nome: OrderFactory constroi Order por campo, TransactionProcessingBenchmark
+// chama o engine, o codigo jmh_generated chama o benchmark) sao abertos
+// JUNTOS, para o ZKM atualizar corretamente as referencias cruzadas ao
+// renomear o motor - renaming precisa de consistencia entre classes,
+// diferente de control-flow/string (transformacao interna, nao precisa).
+//
+// com.finance.perf.*/jmh_generated ficam com nomes/flow/string
+// explicitamente excluidos abaixo (== o antigo <keep-names> "not engine"
+// do Allatori: mantem identidade, so atualiza as chamadas para o motor
+// renomeado). org.openjdk.jmh.* e libs de terceiros nunca sao abertos (so
+// "classpath"), garantindo bytecode 100% intocado ali.
+//
+// Excecoes pontuais dentro do motor (mesmo papel que tinham no Allatori):
+//   - CorrectnessRunner: classe+metodos preservados, e o entry point do
+//     golden file (java -cp jar com.finance.engine.CorrectnessRunner).
+//   - TransactionEngine$Order: classe+campos preservados, e o "contrato
+//     publico" que OrderFactory usa para construir ordens campo a campo.
+//
+// Entrada:  target/zkm-input/com/finance/{engine,perf}/**/*.class
+// Saida:    target/zkm-baseline-out/...
+
+classpath "target/app-original.jar";
+
+open
+    "target/zkm-input/com/finance/engine/*.class"
+    "target/zkm-input/com/finance/perf/*"
+    ;
+
+exclude
+    *. and
+    com.finance.perf.* + and
+    com.finance.perf.jmh_generated.* + and
+    com.finance.engine.CorrectnessRunner + and
+    com.finance.engine.TransactionEngine$Order +
+    ;
+
+obfuscateFlowExclude
+    com.finance.perf.* and
+    com.finance.perf.jmh_generated.*
+    ;
+
+stringEncryptionExclude
+    com.finance.perf.* and
+    com.finance.perf.jmh_generated.*
+    ;
+
+obfuscate
+    changeLogFileOut=""
+    obfuscateFlow=none
+    encryptStringLiterals=none
+    ;
+
+saveAll "target/zkm-baseline-out";

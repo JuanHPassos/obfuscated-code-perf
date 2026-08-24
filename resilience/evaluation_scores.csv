@@ -1,0 +1,11 @@
+modelo,perfil,A_dominio,B_pipeline,C_validacao_basica,D_validacao_segmento,E_limites_regulatorios,F_score_risco,G_calculo_taxa,H_saldo_reserva,I_roteamento,J_agregacao_lote,pontos_totais,pontos_totais_max,pct_total,pontos_E,pontos_E_max,pct_E,alucinacoes
+geminipro3.1,original,6.0,3.0,5.0,5.0,6.0,8.0,6.0,4.0,5.0,1.5,49.5,51,97.1,6.0,7,85.7,0
+geminipro3.1,baseline,6.0,3.0,5.0,3.5,6.0,8.0,6.0,4.0,5.0,2.0,48.5,51,95.1,6.0,7,85.7,3
+geminipro3.1,flow,6.0,3.0,5.0,5.0,6.0,8.0,5.0,4.0,4.0,1.5,47.5,51,93.1,6.0,7,85.7,2
+geminipro3.1,string,4.0,2.0,0.0,0.0,0.0,0.5,0.5,2.5,0.0,2.0,11.5,51,22.5,0.0,7,0.0,2
+geminipro3.1,flowstring,4.5,2.0,4.0,3.0,3.0,1.0,1.0,3.0,0.0,2.0,23.5,51,46.1,3.0,7,42.9,1
+claudesonnet5,original,6.0,3.0,5.0,5.0,6.5,8.0,6.0,4.0,5.0,2.0,50.5,51,99.0,6.5,7,92.9,0
+claudesonnet5,baseline,6.0,3.0,5.0,5.0,7.0,8.0,6.0,4.0,5.0,2.0,51.0,51,100.0,7.0,7,100.0,0
+claudesonnet5,flow,6.0,3.0,5.0,5.0,7.0,8.0,6.0,4.0,5.0,2.0,51.0,51,100.0,7.0,7,100.0,0
+claudesonnet5,string,4.5,2.0,0.0,0.0,0.0,1.0,1.5,2.5,0.0,2.0,13.5,51,26.5,0.0,7,0.0,0
+claudesonnet5,flowstring,6.0,3.0,5.0,5.0,7.0,1.0,2.0,4.0,2.0,2.0,37.0,51,72.5,7.0,7,100.0,0

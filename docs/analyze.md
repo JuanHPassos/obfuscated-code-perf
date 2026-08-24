@@ -2,7 +2,7 @@
 
 Documenta o script que transforma os resultados brutos do JMH (`results/jmh-*.json`) nas
 saídas estatísticas do projeto (`analysis/summary.csv`, `analysis/arch_interaction.csv` e os
-gráficos). Ver também o diagrama de fluxo em [`07_analyze_flow.excalidraw`](07_analyze_flow.excalidraw).
+gráficos). Ver também o diagrama de fluxo em [`analyze_flow.excalidraw`](analyze_flow.excalidraw).
 
 ## Fluxo geral
 
