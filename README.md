@@ -26,8 +26,6 @@ scripts/
   04_bench.sh              # T6  coleta JMH (+ termia no ARM)
   05_decompile.sh          # T7  decompila o motor com CFR
   07_analyze.py            # T8  estatistica + graficos (summary.csv, arch_interaction.csv)
-  anova_check.py           # T8b checagem cruzada via ANOVA fatorial + Tukey HSD (metodo
-                            #     usado na apresentacao) sobre os mesmos results/jmh-*.json
   prompt-template.md       # T7  prompt padrao para a LLM (+ protocolo de avaliacao)
 src/main/java/com/finance/ # motor (engine) + harness (perf)
 docs/                      # Rubrica de resiliencia (Check.md), etc.
@@ -168,17 +166,7 @@ Para cada perfil calcula média, IC 95%, overhead % vs. `original`, teste de sig
 
 Além disso, `arch_interaction.csv` testa se o overhead de cada perfil **difere entre ARM e x86_64** (bootstrap da diferença de overheads, com correção Holm-Bonferroni por (size, par de arquiteturas)). Isso é necessário porque "significativo em x86, não-significativo em ARM" na tabela `summary.csv` não implica, por si só, que a diferença entre as arquiteturas seja estatisticamente significativa.
 
-#### T8b - Checagem cruzada (ANOVA) e EDA em notebook
-
-```bash
-pip install statsmodels
-python3 scripts/anova_check.py
-# gera analysis/anova_summary.csv (ANOVA one-way + Tukey HSD por (arch,size))
-# e analysis/anova_interaction.csv (ANOVA two-way, interacao arch x profile)
-
-```
-
-É o método clássico (Jain) usado como contraponto à abordagem bootstrap/Mann-Whitney de `07_analyze.py`, e é o que embasa a leitura em ANOVA fatorial + Tukey HSD usada na apresentação — se as duas abordagens concordarem, reforça confiança no resultado.
+#### EDA em notebook
 
 Os notebooks `analysis-data-preparation.ipynb` e `analysis-exploratoria-dados.ipynb` (raiz do repo) rodam depois: o primeiro limpa/tipa `summary.csv`/`arch_interaction.csv` em `analysis/*_prepared.csv`, o segundo faz a EDA completa (histogramas, correlação de Pearson/Spearman, boxplot por arquitetura etc.) em cima desses `_prepared.csv`. Ambos assumem T8 já rodado — se você re-obfuscar/re-benchmarkar qualquer perfil, rode T8 (e T8b) de novo antes deles.
 
